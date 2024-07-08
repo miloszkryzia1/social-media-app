@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime
 
 class Account(models.Model):
     first_name = models.CharField(max_length=50)
@@ -23,7 +24,8 @@ class FriendRequest(models.Model):
 class Post(models.Model):
     author = models.ForeignKey(Account, on_delete=models.CASCADE, null=False)
     text = models.CharField(max_length=1000)
-    image = models.ImageField()
+    image = models.ImageField(default=None)
+    datetime = models.DateTimeField(default=datetime.now())
 
     class Meta:
         db_table = "post"

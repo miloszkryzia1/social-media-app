@@ -25,6 +25,8 @@ Posts:
 - remove comment
 - like a post
 - remove like
+- get all friends posts
+- get all posts from a user
 """
 @csrf_exempt
 def send_friend_request(request):
@@ -50,8 +52,8 @@ def decline_friend_request(request):
 
 @csrf_exempt
 def remove_friend(request):
-    acc_1_id = request.POST["acc_1_id"]
-    acc_2_id = request.POST["acc_2_id"]
+    acc_1_id = request.POST["user_1_id"]
+    acc_2_id = request.POST["user_2_id"]
     acc_1 = models.Account.objects.get(id=acc_1_id)
     acc_2 = models.Account.objects.get(id=acc_2_id)
     acc_1.friend.remove(acc_2)
@@ -70,8 +72,8 @@ def get_friend_requests(request):
     return JsonResponse(frs_list, safe=False)
 
 def get_friendship_status(request):
-    acc_1_id = request.GET['acc_1_id']
-    acc_2_id = request.GET['acc_2_id']
+    acc_1_id = request.GET['user_1_id']
+    acc_2_id = request.GET['user_2_id']
     acc_1 = models.Account.objects.get(id=acc_1_id)
     acc_2 = models.Account.objects.get(id=acc_2_id)
     #friends / requested / request sent
@@ -89,3 +91,90 @@ def get_friendship_status(request):
             return HttpResponse("fr_sent", status=200)
         return HttpResponse("not_friends", status=200)
 
+#Posts
+
+#TODO handle image in post
+@csrf_exempt
+def create_post(request):
+    author_id = request.POST["user_id"]
+    text = request.POST["text"]
+    author = models.Account.objects.get(id=author_id)
+    post = models.Post(author=author, text=text)
+    post.save()
+    return HttpResponse("Post created", status=200)
+
+@csrf_exempt
+def remove_post(request):
+    post_id = request.POST["post_id"]
+    post = models.Post.objects.get(id=post_id)
+    post.delete()
+    return HttpResponse("Post deleted", status=200)
+
+@csrf_exempt
+def edit_post(request):
+    post_id = request.POST["post_id"]
+    new_text = request.POST["new_text"]
+    post = models.Post.objects.get(id=post_id)
+    post.text = new_text
+    post.save()
+    return HttpResponse("Post edited", status=200)
+
+@csrf_exempt
+def comment_post(request):
+    post_id = request.POST["post_id"]
+    user_id = request.POST["user_id"]
+    text = request.POST["text"]
+    user = models.Account.objects.get(id=user_id)
+    post = models.Post.objects.get(id=post_id)
+    comment = models.Comment(user=user, post=post, text=text)
+    comment.save()
+    return HttpResponse("Comment created", status=200)
+
+@csrf_exempt
+def remove_comment(request):
+    comment_id = request.POST["comment_id"]
+    comment = models.Comment.objects.get(id=comment_id)
+    comment.delete()
+    return HttpResponse("Comment deleted")
+
+@csrf_exempt
+def like_post(request):
+    post_id = request.POST["post_id"]
+    user_id = request.POST["user_id"]
+    post = models.Post.objects.get(id=post_id)
+    user = models.Account.objects.get(id=user_id)
+    like = models.Like(user=user, post=post)
+    like.save()
+    return HttpResponse("Post liked")
+
+@csrf_exempt
+def remove_like(request):
+    like_id = request.POST["like_id"]
+    like = models.Like.objects.get(id=like_id)
+    like.delete()
+    return HttpResponse("Like removed")
+
+def get_like_comment_count(request):
+    post_id = request.GET["post_id"]
+    post = models.Post.objects.get(id=post_id)
+    like_count = post.like_set.count()
+    comment_count = post.comment_set.count()
+    data = {"likes" : like_count, "comments" : comment_count}
+    return JsonResponse(data)
+
+def get_friends_posts(request):
+    user_id = request.GET["user_id"]
+    user = models.Account.objects.get(id=user_id)
+    posts = []
+    for f in user.friend.all():
+        for p in f.post_set.all().values():
+            posts.append(p)
+    return JsonResponse(posts, safe=False)
+
+def get_user_posts(request):
+    user_id = request.GET["user_id"]
+    user = models.Account.objects.get(id=user_id)
+    post_list = list(user.post_set.all().values())
+    return JsonResponse(post_list, safe=False)
+
+#TODO add mroe endpoints as needed
