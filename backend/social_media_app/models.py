@@ -12,6 +12,13 @@ class Account(models.Model):
     class Meta:
         db_table = "account"
 
+class FriendRequest(models.Model):
+    from_user = models.ForeignKey(Account, on_delete=models.CASCADE)
+    to_user = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="request_to_set")
+    status = models.CharField(max_length=20, default="sent")
+
+    class Meta:
+        db_table = "friend_request"
 
 class Post(models.Model):
     author = models.ForeignKey(Account, on_delete=models.CASCADE, null=False)
