@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 
+#TODO add the rest of urls
 urlpatterns = [
     path("send-friend-request", views.send_friend_request),
     path("accept-friend-request", views.accept_friend_request),

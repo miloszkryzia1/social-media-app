@@ -153,14 +153,6 @@ def remove_like(request):
     like.delete()
     return HttpResponse("Like removed")
 
-def get_like_comment_count(request):
-    post_id = request.GET["post_id"]
-    post = models.Post.objects.get(id=post_id)
-    like_count = post.like_set.count()
-    comment_count = post.comment_set.count()
-    data = {"likes" : like_count, "comments" : comment_count}
-    return JsonResponse(data)
-
 def get_friends_posts(request):
     user_id = request.GET["user_id"]
     user = models.Account.objects.get(id=user_id)
