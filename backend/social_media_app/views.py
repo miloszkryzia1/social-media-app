@@ -176,3 +176,12 @@ def get_user_posts(request):
 
 #TODO add mroe endpoints as needed
 #TODO document all functions
+
+def get_user(request):
+    user_id = request.GET["user_id"]
+    user_data = models.Account.objects.filter(id=user_id).values()[0]
+    user_data.pop("username")
+    user_data.pop("password")
+    return JsonResponse(user_data)
+
+#TODO add login
