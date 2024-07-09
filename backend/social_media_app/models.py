@@ -27,6 +27,14 @@ class Post(models.Model):
     image = models.ImageField(default=None)
     datetime = models.DateTimeField(default=datetime.now())
 
+    @property
+    def like_count(self):
+        return self.like_set.count()
+    @property
+    def comment_count(self):
+        return self.comment_set.count()
+
+
     class Meta:
         db_table = "post"
 

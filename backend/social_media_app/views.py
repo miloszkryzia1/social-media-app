@@ -168,12 +168,19 @@ def get_friends_posts(request):
     for f in user.friend.all():
         for p in f.post_set.all().values():
             posts.append(p)
+    for p in posts:
+        p["likes"] = models.Post.objects.get(id=p["id"]).like_count
+        p["comments"] = models.Post.objects.get(id=p["id"]).comment_count
     return JsonResponse(posts, safe=False)
 
 def get_user_posts(request):
     user_id = request.GET["user_id"]
     user = models.Account.objects.get(id=user_id)
-    post_list = list(user.post_set.all().values())
-    return JsonResponse(post_list, safe=False)
+    posts = list(user.post_set.all().values())
+    for p in posts:
+        p["likes"] = models.Post.objects.get(id=p["id"]).like_count
+        p["comments"] = models.Post.objects.get(id=p["id"]).comment_count
+    return JsonResponse(posts, safe=False)
 
 #TODO add mroe endpoints as needed
+#TODO document all functions
