@@ -14,6 +14,10 @@ data class Account (
     val email: String,
     @SerializedName("date_of_birth")
     val dateOfBirth: Date
-)
 
-//TODO: add other pojos
+
+) {
+    override fun toString(): String {
+        return "Account(id=$id, firstName='$firstName', lastName='$lastName', email='$email', dateOfBirth=$dateOfBirth)"
+    }
+}

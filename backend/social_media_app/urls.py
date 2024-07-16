@@ -11,5 +11,6 @@ urlpatterns = [
     path("get-friendship-status", views.get_friendship_status),
     path("get-friends-posts", views.get_friends_posts),
     path("get-user-posts", views.get_user_posts),
-    path("get-user", views.get_user)
+    path("get-user", views.get_user),
+    path("get-friend-requests", views.get_friend_requests)
 ]

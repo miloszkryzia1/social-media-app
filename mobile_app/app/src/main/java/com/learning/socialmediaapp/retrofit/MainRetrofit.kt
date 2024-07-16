@@ -9,13 +9,13 @@ class MainRetrofit {
         @Volatile
         var INSTANCE: Retrofit? = null
         private val LOCK = Any()
-        private val BASE_URL = "https://10.0.2.2/social"
+        private const val BASEURL = "http://10.0.2.2:8000/social/"
 
         fun getInstance(): Retrofit {
             return INSTANCE ?:
                 synchronized(LOCK) {
                     val instance = Retrofit.Builder()
-                        .baseUrl(BASE_URL)
+                        .baseUrl(BASEURL)
                         .addConverterFactory(GsonConverterFactory.create())
                         .build()
 
