@@ -18,7 +18,7 @@ Friends:
 - remove friend
 - get all friends of a user
 - get all friend requests sent to a user
-- get friendship status between 2 users (friends/notfriends/request sent)
+- get friendship status between 2 users (friends/notfriends/request sent) DONE
 
 Posts:
 - create a post
@@ -77,13 +77,54 @@ class FriendRequestRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIVi
     serializer_class = FriendRequestSerializer
     lookup_field = "pk"
 
+    #accept or change friend request status
     def patch(self, request, *args, **kwargs):
         data = request.data
         instance = self.get_object()
         new_status = data["status"]
         if new_status == "accepted":
+            acc_1 = Account.objects.get(id=instance.from_user.id)
+            acc_2 = Account.objects.get(id=instance.to_user.id)
+            acc_1.friend.add(acc_2)
             instance.delete()
             return Response("FR accepted and deleted", status=status.HTTP_204_NO_CONTENT)
         instance.status = new_status
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+    
+class FriendshipRetrieveView(generics.GenericAPIView):
+    # provide users' ID's from request body
+    # return user ids and status
+    def get(self, request, *args, **kwargs):
+        data = request.query_params
+        user_id_1 = data.get("user_id_1", None)
+        user_id_2 = data.get("user_id_2", None)
+        acc_1 = Account.objects.get(id=user_id_1) #currently logged in on device sending request
+        acc_2 = Account.objects.get(id=user_id_2)
+        acc_1_friends = acc_1.friend
+        response = {}
+        try:
+            #return friends
+            acc_1_friends.get(id=acc_2.id)
+            response["status"] = "friends"
+        except Account.DoesNotExist:
+            #return not friends, request sent, or request received
+            try:
+                fr = FriendRequest.objects.get(from_user=acc_1, to_user=acc_2)
+                # if fr exists, check its status
+                status = fr.status
+                if status == "sent":
+                    response["status"] = "frsent"
+                elif status == "declined":
+                    response["status"] = "notfriends"
+            except FriendRequest.DoesNotExist:
+                try:
+                    fr = FriendRequest.objects.get(from_user=acc_2, to_user=acc_1)
+                    status = fr.status
+                    if status == "sent":
+                        response["status"] = "frreceived"
+                    elif status == "declined":
+                        response["status"] = "notfriends"
+                except FriendRequest.DoesNotExist:
+                    response["status"] = "notfriends"
+        return Response(response)
