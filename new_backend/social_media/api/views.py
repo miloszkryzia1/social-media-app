@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from .models import *
 from .serializers import *
 from django.http import HttpResponse
+from django.db.models import Q
 
 """
 List of endpoints needed:
@@ -149,3 +150,22 @@ class FriendshipRetrieveView(generics.GenericAPIView, mixins.DestroyModelMixin):
         acc_1_friends = acc_1.friends
         acc_1_friends.remove(acc_2)
         return Response("Friendship deleted", status=status.HTTP_200_OK)
+    
+class PostListCreateView(generics.ListCreateAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+
+    def get(self, request, *args, **kwargs):
+        author_id = request.query_params.get("author_id", None)
+        friends_with_id = request.query_params.get("friends_with_id", None)
+        if author_id:
+            queryset = Post.objects.filter(author=Account.objects.get(id=author_id))
+            serializer = PostSerializer(queryset, many=True)
+            return Response(serializer.data)
+        elif friends_with_id:
+            friends = Account.objects.get(id=friends_with_id).friends.all()
+            queryset = Post.objects.filter(Q(author__in=friends))
+            serializer = PostSerializer(queryset, many=True)
+            return Response(serializer.data)
+        else:
+            return self.list(request, *args, **kwargs)

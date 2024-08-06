@@ -6,5 +6,6 @@ urlpatterns = [
     path("accounts/<int:pk>", views.AccountRetrieveUpdateDestroyView.as_view()),
     path("friendrequest/", views.FriendRequestListCreateView.as_view()),
     path("friendrequest/<int:pk>", views.FriendRequestRetrieveUpdateDestroyView.as_view()),
-    path("friendship/", views.FriendshipRetrieveView.as_view())
+    path("friendship/", views.FriendshipRetrieveView.as_view()),
+    path("posts/", views.PostListCreateView.as_view())
 ]
