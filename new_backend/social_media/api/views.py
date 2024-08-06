@@ -15,9 +15,9 @@ Friends:
 - send friend request - requires sending user id & receiving user id DONE
 - accept friend request - requires friend request id DONE
 - decline friend request DONE
-- remove friend
-- get all friends of a user
-- get all friend requests sent to a user
+- remove friend DONE
+- get all friends of a user DONE
+- get all friend requests sent to a user DONE
 - get friendship status between 2 users (friends/notfriends/request sent) DONE
 
 Posts:
@@ -95,14 +95,15 @@ class FriendRequestRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIVi
         if new_status == "accepted":
             acc_1 = Account.objects.get(id=instance.from_user.id)
             acc_2 = Account.objects.get(id=instance.to_user.id)
-            acc_1.friend.add(acc_2)
+            acc_1.friends.add(acc_2)
             instance.delete()
             return Response("FR accepted and deleted", status=status.HTTP_204_NO_CONTENT)
         instance.status = new_status
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
     
-class FriendshipRetrieveView(generics.GenericAPIView):
+class FriendshipRetrieveView(generics.GenericAPIView, mixins.DestroyModelMixin):
+
     # provide users' ID's from request body
     # return user ids and status
     def get(self, request, *args, **kwargs):
@@ -111,7 +112,7 @@ class FriendshipRetrieveView(generics.GenericAPIView):
         user_id_2 = data.get("user_id_2", None)
         acc_1 = Account.objects.get(id=user_id_1) #currently logged in on device sending request
         acc_2 = Account.objects.get(id=user_id_2)
-        acc_1_friends = acc_1.friend
+        acc_1_friends = acc_1.friends
         response = {}
         try:
             #return friends
@@ -138,3 +139,13 @@ class FriendshipRetrieveView(generics.GenericAPIView):
                 except FriendRequest.DoesNotExist:
                     response["status"] = "notfriends"
         return Response(response)
+    
+    def delete(self, request, *args, **kwargs):
+        data = request.query_params
+        user_id_1 = data.get("user_id_1", None)
+        user_id_2 = data.get("user_id_2", None)
+        acc_1 = Account.objects.get(id=user_id_1) #currently logged in on device sending request
+        acc_2 = Account.objects.get(id=user_id_2)
+        acc_1_friends = acc_1.friends
+        acc_1_friends.remove(acc_2)
+        return Response("Friendship deleted", status=status.HTTP_200_OK)
