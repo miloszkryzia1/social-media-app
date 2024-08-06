@@ -8,7 +8,7 @@ class Account(models.Model):
     date_of_birth = models.DateField()
     username = models.CharField(max_length=50)
     password = models.CharField(max_length=100)
-    friend = models.ManyToManyField("self", db_table="friendship")
+    friends = models.ManyToManyField("self", db_table="friendship")
 
     class Meta:
         db_table = "account"

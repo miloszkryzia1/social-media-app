@@ -36,9 +36,19 @@ GENERICS:
 
 #TODO handle username & password & account creation
 # get users
-class AccountListCreateView(generics.ListCreateAPIView):
+class AccountListCreateView(generics.ListCreateAPIView, mixins.ListModelMixin):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
+
+    def get(self, request, *args, **kwargs):
+        friend_id = request.query_params.get("friends_with_id", None)
+        if friend_id == None:
+            return self.list(request, *args, **kwargs)
+        else:
+            friend = Account.objects.get(id=friend_id)
+            queryset = friend.friends.all()
+            serializer = AccountSerializer(queryset, many=True)
+            return Response(serializer.data)
 
 # add/post/delete users
 class AccountRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
