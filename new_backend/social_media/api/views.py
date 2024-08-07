@@ -8,50 +8,45 @@ from django.http import HttpResponse
 from django.db.models import Q
 
 """
-List of endpoints needed:
 
 TODO: DOCUMENT EVERYTHING and CLEAN UP
 
-Friends:
-- send friend request - requires sending user id & receiving user id DONE
-- accept friend request - requires friend request id DONE
-- decline friend request DONE
-- remove friend DONE
-- get all friends of a user DONE
-- get all friend requests sent to a user DONE
-- get friendship status between 2 users (friends/notfriends/request sent) DONE
-
-Posts:
-- create a post DONE
-- remove a post DONE
-- edit a post DONE
-- comment on a post DONE
-- remove comment DONE
-- like a post DONE
-- remove like DONE
-- get all friends posts DONE
-- get all posts from a user DONE 
-
-GENERICS:
 """
 
 #TODO handle username & password & account creation
-# get users
-class AccountListCreateView(generics.ListCreateAPIView, mixins.ListModelMixin):
+
+"""
+GET /accounts/
+opt params: friends_with_id - return only users that are friends of specified account
+
+POST /accounts/
+pass entire user data as body
+"""
+class AccountListCreateView(generics.GenericAPIView, mixins.ListModelMixin):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
 
     def get(self, request, *args, **kwargs):
         friend_id = request.query_params.get("friends_with_id", None)
-        if friend_id == None:
+        if friend_id == None:        
             return self.list(request, *args, **kwargs)
         else:
             friend = Account.objects.get(id=friend_id)
             queryset = friend.friends.all()
             serializer = AccountSerializer(queryset, many=True)
             return Response(serializer.data)
+        
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        new_account = Account(first_name=data["first_name"], last_name=data["last_name"], email=data["email"], date_of_birth=data["date_of_birth"], username=data["username"], password=data["password"])
+        new_account.save()
+        serializer = AccountSerializerUserPassowrd(data)
+        return Response(serializer.data)
 
 # add/post/delete users
+"""
+GET, PUT, DELETE /accounts/id
+"""
 class AccountRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
@@ -60,6 +55,12 @@ class AccountRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 #friend requests
 
 #get/send friend requests
+"""
+GET /friendrequests/
+opt params: to_user, from_user - return with specfied filters
+
+POST /friendrequests/
+"""
 class FriendRequestListCreateView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
     queryset = FriendRequest.objects.all()
     serializer_class = FriendRequestSerializer
@@ -82,7 +83,14 @@ class FriendRequestListCreateView(generics.GenericAPIView, mixins.ListModelMixin
     
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
-    
+
+
+"""
+GET, PUT, DELETE /friendrequests/id
+
+PATCH /friendrequests/id with body status=***accepted/rejected/canceled***
+use to accept/deny/cancel FRs
+"""
 class FriendRequestRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = FriendRequest.objects.all()
     serializer_class = FriendRequestSerializer
@@ -99,10 +107,21 @@ class FriendRequestRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIVi
             acc_1.friends.add(acc_2)
             instance.delete()
             return Response("FR accepted and deleted", status=status.HTTP_204_NO_CONTENT)
+        elif new_status == "canceled":
+            instance.delete()
+            return Response("FR deleted", status=status.HTTP_204_NO_CONTENT)
         instance.status = new_status
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
     
+"""
+GET /friendship/
+with params user_id_1 and user_id_2
+returns friendship status between two users
+
+DELETE /friendship/ with body user_id_1 and user_id_2
+removes friendship between two users
+"""
 class FriendshipRetrieveView(generics.GenericAPIView):
 
     # provide users' ID's from request body
@@ -150,7 +169,12 @@ class FriendshipRetrieveView(generics.GenericAPIView):
         acc_1_friends = acc_1.friends
         acc_1_friends.remove(acc_2)
         return Response("Friendship deleted", status=status.HTTP_200_OK)
-    
+
+"""
+GET /posts/ 
+opt params: author_id, friends_with_id 
+get either all posts, posts by specified user, or posts by friends of specified user
+"""
 class PostListCreateView(generics.ListCreateAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
@@ -170,11 +194,18 @@ class PostListCreateView(generics.ListCreateAPIView):
         else:
             return self.list(request, *args, **kwargs)
         
+"""
+GET, PUT, DELETE /posts/id
+"""
 class PostRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     lookup_field = "pk"
 
+"""
+GET /likes/
+opt param post_id - get all likes under specified post
+"""
 class LikeListCreateView(generics.ListCreateAPIView):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
@@ -188,11 +219,18 @@ class LikeListCreateView(generics.ListCreateAPIView):
         return self.list(request, *args, **kwargs)
     
 # unlike - maybe change to something more complex if needed, for now unlike by like id
+"""
+DELETE /likes/id
+"""
 class LikeDestroyView(generics.DestroyAPIView):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
     lookup_field = "pk"
 
+"""
+GET /comments/
+opt param post_id - get all comments under specified post
+"""
 class CommentListCreateView(generics.ListCreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
@@ -205,6 +243,9 @@ class CommentListCreateView(generics.ListCreateAPIView):
             return Response(serializer.data)
         return self.list(request, *args, **kwargs)
     
+"""
+GET, PUT, DELETE /comments/id
+"""
 class CommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
