@@ -10,7 +10,7 @@ from django.db.models import Q
 """
 List of endpoints needed:
 
-TODO: DESCRIBE ALL REQUIRED PARAMETERS / REQUEST TYPES FOR EACH ENDPOINT
+TODO: DOCUMENT EVERYTHING and CLEAN UP
 
 Friends:
 - send friend request - requires sending user id & receiving user id DONE
@@ -22,15 +22,15 @@ Friends:
 - get friendship status between 2 users (friends/notfriends/request sent) DONE
 
 Posts:
-- create a post
-- remove a post
-- edit a post
-- comment on a post
-- remove comment
-- like a post
-- remove like
-- get all friends posts
-- get all posts from a user
+- create a post DONE
+- remove a post DONE
+- edit a post DONE
+- comment on a post DONE
+- remove comment DONE
+- like a post DONE
+- remove like DONE
+- get all friends posts DONE
+- get all posts from a user DONE 
 
 GENERICS:
 """
@@ -103,7 +103,7 @@ class FriendRequestRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIVi
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
     
-class FriendshipRetrieveView(generics.GenericAPIView, mixins.DestroyModelMixin):
+class FriendshipRetrieveView(generics.GenericAPIView):
 
     # provide users' ID's from request body
     # return user ids and status
@@ -169,3 +169,43 @@ class PostListCreateView(generics.ListCreateAPIView):
             return Response(serializer.data)
         else:
             return self.list(request, *args, **kwargs)
+        
+class PostRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    lookup_field = "pk"
+
+class LikeListCreateView(generics.ListCreateAPIView):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+
+    def get(self, request, *args, **kwargs):
+        post_id = request.query_params.get("post_id", None)
+        if post_id:
+            queryset = Post.objects.get(id=post_id).like_set.all()
+            serializer = LikeSerializer(queryset, many=True)
+            return Response(serializer.data)
+        return self.list(request, *args, **kwargs)
+    
+# unlike - maybe change to something more complex if needed, for now unlike by like id
+class LikeDestroyView(generics.DestroyAPIView):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+    lookup_field = "pk"
+
+class CommentListCreateView(generics.ListCreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+    def get(self, request, *args, **kwargs):
+        post_id = request.query_params.get("post_id", None)
+        if post_id:
+            queryset = Post.objects.get(id=post_id).comment_set.all()
+            serializer = CommentSerializer(queryset, many=True)
+            return Response(serializer.data)
+        return self.list(request, *args, **kwargs)
+    
+class CommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    lookup_field = "pk"
