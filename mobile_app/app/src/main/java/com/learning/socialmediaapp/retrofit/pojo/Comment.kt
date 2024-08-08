@@ -9,4 +9,9 @@ data class Comment(
     @SerializedName("post_id")
     val postId: Int,
     val text: String
-)
+) {
+    override fun toString(): String {
+        return "Comment(id=$id, userId=$userId, postId=$postId, text='$text')"
+    }
+}
+

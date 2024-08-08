@@ -8,4 +8,8 @@ data class Like(
     val userId: Int,
     @SerializedName("post_id")
     val postId: Int
-)
+) {
+    override fun toString(): String {
+        return "Like(id=$id, userId=$userId, postId=$postId)"
+    }
+}

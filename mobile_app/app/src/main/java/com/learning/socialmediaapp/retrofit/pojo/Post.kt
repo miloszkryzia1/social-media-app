@@ -14,4 +14,8 @@ data class Post(
     val likeCount: Int,
     @SerializedName("comments")
     val commentCount: Int
-)
+) {
+    override fun toString(): String {
+        return "Post(id=$id, authorId=$authorId, text='$text', datetime=$datetime, likeCount=$likeCount, commentCount=$commentCount)"
+    }
+}

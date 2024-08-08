@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         binding!!.button.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
-                val responseObject = service.getUserInfo(1)
+                val responseObject = service.getFriendshipStatus(2, 3)
                 Log.i("TEST", responseObject.toString())
             }
         }

@@ -9,7 +9,7 @@ class MainRetrofit {
         @Volatile
         var INSTANCE: Retrofit? = null
         private val LOCK = Any()
-        private const val BASEURL = "http://10.0.2.2:8000/social/"
+        private const val BASEURL = "http://10.0.2.2:8000/"
 
         fun getInstance(): Retrofit {
             return INSTANCE ?:

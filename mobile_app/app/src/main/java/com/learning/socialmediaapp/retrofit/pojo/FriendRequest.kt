@@ -11,4 +11,10 @@ data class FriendRequest(
     val toUserId: Int,
     @SerializedName("status")
     val status: String
-)
+) {
+    override fun toString(): String {
+        return "FriendRequest(id=$id, fromUserId=$fromUserId, toUserId=$toUserId, status='$status')"
+    }
+}
+
+
