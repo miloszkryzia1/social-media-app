@@ -25,14 +25,6 @@ class MainActivity : AppCompatActivity() {
         //TODO: add tests
         val retrofit = MainRetrofit.getInstance()
         val service = retrofit.create(SocialService::class.java)
-
-        binding!!.button.setOnClickListener {
-            CoroutineScope(Dispatchers.IO).launch {
-                val responseObject = service.getFriendshipStatus(2, 3)
-                Log.i("TEST", responseObject.toString())
-            }
-        }
-        //get user info
     }
 
 

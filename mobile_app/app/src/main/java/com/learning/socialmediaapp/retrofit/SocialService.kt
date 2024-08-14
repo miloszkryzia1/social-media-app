@@ -12,7 +12,6 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface SocialService {
-    //TODO add calls
     /*
      * GET:
      * - get user info DONE
@@ -43,7 +42,6 @@ interface SocialService {
     @GET("accounts/")
     suspend fun getFriends(@Query("friends_with_id") userId: Int): List<Account>
 
-    //TODO idk if string works as return type, might need to make another class for the response
     @GET("friendship/")
     suspend fun getFriendshipStatus(
         @Query("user_id_1") userId1: Int,
@@ -86,4 +84,13 @@ interface SocialService {
 
     @POST("comments/")
     suspend fun commentPost(@Body comment: Comment): Comment
+
+    //User account creation
+    @POST("accounts/")
+    suspend fun createAccount(@Body account: AccountUserPassword): AccountUserPassword
+
+    //User login
+    @POST("login/")
+    suspend fun login(@Body login: RequestBody): Account
+
 }

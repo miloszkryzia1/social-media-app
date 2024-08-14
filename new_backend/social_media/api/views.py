@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework import generics, mixins, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from .models import *
 from .serializers import *
 from django.http import HttpResponse
@@ -13,7 +14,22 @@ TODO: DOCUMENT EVERYTHING and CLEAN UP
 
 """
 
-#TODO handle username & password & account creation
+
+#TODO: REPLACE WITH ACTUAL AUTH
+#USER LOGIN
+#pass username and password as body
+@api_view(['POST'])
+def login(request):
+    body = request.data
+    username = body['username']
+    password = body['password']
+    try:
+        acc = Account.objects.get(username=username, password=password)
+        serializer = AccountSerializerUserPassword(acc)
+        return Response(serializer.data)
+    except Account.DoesNotExist:
+        return Response("Username or password not matching.",  status=200)
+
 
 """
 GET /accounts/
@@ -40,7 +56,7 @@ class AccountListCreateView(generics.GenericAPIView, mixins.ListModelMixin):
         data = request.data
         new_account = Account(first_name=data["first_name"], last_name=data["last_name"], email=data["email"], date_of_birth=data["date_of_birth"], username=data["username"], password=data["password"])
         new_account.save()
-        serializer = AccountSerializerUserPassowrd(data)
+        serializer = AccountSerializerUserPassword(data)
         return Response(serializer.data)
 
 # add/post/delete users

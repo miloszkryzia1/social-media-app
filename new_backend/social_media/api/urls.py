@@ -12,5 +12,6 @@ urlpatterns = [
     path("likes/", views.LikeListCreateView.as_view()),
     path("likes/<int:pk>", views.LikeDestroyView.as_view()),
     path("comments/", views.CommentListCreateView.as_view()),
-    path("comments/<int:pk>", views.CommentRetrieveUpdateDestroyView.as_view())
+    path("comments/<int:pk>", views.CommentRetrieveUpdateDestroyView.as_view()),
+    path("login/", views.login)
 ]
