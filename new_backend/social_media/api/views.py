@@ -119,10 +119,10 @@ GET /friendship/
 with params user_id_1 and user_id_2
 returns friendship status between two users
 
-DELETE /friendship/ with body user_id_1 and user_id_2
+DELETE /friendship/ with query params user_id_1 and user_id_2
 removes friendship between two users
 """
-class FriendshipRetrieveView(generics.GenericAPIView):
+class FriendshipRetrieveDestroyView(generics.GenericAPIView):
 
     # provide users' ID's from request body
     # return user ids and status
